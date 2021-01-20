@@ -6,7 +6,7 @@ namespace CarSimulatorEngine.Models
 {
     internal class PassengerCarGear : Gear
     {
-        public  override LinkedList<Gears> AvailableGearTypes { get; protected internal set; }
+        public override LinkedList<Gears> AvailableGearTypes { get; protected internal set; }
 
         internal PassengerCarGear()
         {

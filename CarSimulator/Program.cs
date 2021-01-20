@@ -49,7 +49,6 @@ namespace CarSimulator
                 {
                     carSimulatorEngine.GearDown();
                 }
-
             }
         }
     }

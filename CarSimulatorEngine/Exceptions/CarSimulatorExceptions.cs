@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 
 namespace CarSimulatorEngine.Exceptions
 {
@@ -29,6 +30,7 @@ namespace CarSimulatorEngine.Exceptions
         {
         }
     }
+
     public class OilLevelTooHighException : CarSimulatorException
     {
         public OilLevelTooHighException(string? message) : base(message)
