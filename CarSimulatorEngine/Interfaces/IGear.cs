@@ -15,6 +15,7 @@ namespace CarSimulatorEngine.Interfaces
         public LinkedListNode<Gears> UsedGear { get; protected internal set; }
         public Gears MaxGear { get; protected internal set; }
         public Gears MinGear { get; protected internal set; }
+        public bool IsLastGearInUse => UsedGear.Value == MaxGear || UsedGear.Value == MinGear; 
 
         public Gears GearUp()
         {

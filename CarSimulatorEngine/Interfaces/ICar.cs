@@ -8,16 +8,22 @@ namespace CarSimulatorEngine.Interfaces
 {
     internal interface ICar
     {
+        void Work();
         void StartCarEngine();
         void StopCarEngine();
+
         void FillFuelTank();
-        void Calculate();
+
+        void Accelerate();
+
+        void GearUp();
+        void GearDown();
     }
 
     internal abstract class Car : ICar
     {
-        public double Speed { get; protected internal set; } = 0;
-        public abstract double SpeedMaxValue { get; protected internal set; }
+        public double CarSpeed { get; protected internal set; } = 0;
+        public abstract double CarSpeedMaxValue { get; protected internal set; }
         public double EngineSpeed { get; protected internal set; } = 0;
         public abstract double EngineSpeedMaxValue { get; protected internal set; }
         public abstract double Fuel { get; protected internal set; }
@@ -28,7 +34,6 @@ namespace CarSimulatorEngine.Interfaces
         public double FuelConsumption => CalculateFuelConsumptionInKilometersPerHour();
         public abstract Gear Gear { get; protected internal set; }
         public CarStates CarState { get; protected internal set; } = CarStates.Off;
-        public DrivingDirections DrivingDirection { get; protected internal set; } = DrivingDirections.Forward;
         public HashSet<CarFaults> CarFaults { get; protected internal set; } = new HashSet<CarFaults>();
 
         public void StartCarEngine()
@@ -43,6 +48,7 @@ namespace CarSimulatorEngine.Interfaces
         public void StopCarEngine()
         {
             EngineSpeed = 0;
+            CarSpeed = 0;
             CarState = CarStates.Off;
         }
 
@@ -51,7 +57,7 @@ namespace CarSimulatorEngine.Interfaces
             Fuel = FuelCapacity;
         }
 
-        public void Calculate()
+        public void Work()
         {
             if (CarState == CarStates.Off)
             {
@@ -76,52 +82,101 @@ namespace CarSimulatorEngine.Interfaces
                 throw new CanNotDriveWhileCarOff("Can not drive while car is off");
             }
 
-            if (Gear.UsedGear.Value == Gears.Neutral)
-            {
-                if (DrivingDirection == DrivingDirections.Forward)
-                    Gear.GearUp();
-                else
-                    Gear.GearDown();
-                return;
-            }
-
-            if (Gear.MinGear == Gear.UsedGear.Value)
-            {
-                EngineSpeed += 100;
-                return;
-            }
-
-            if (Gear.MaxGear == Gear.UsedGear.Value)
-            {
-                EngineSpeed += 100;
-                return;
-            }
-
-            if (EngineSpeed >= 3000)
-            {
-                Gear.GearUp();
-                return;
-            }
-
-            EngineSpeed += 100;
+            CalculateEngineSpeed(1);
+            CalculateCarSpeed(1);
         }
 
-        public void ChangeDrivingDirection()
+        public void GearUp()
         {
-            if (Gear.UsedGear.Value != Gears.Neutral)
+            if (Gear.UsedGear.Next is null)
             {
-                throw new CanNotChangeDrivingDirectionException(
-                    "Can not change driving direction while gear is not on neutral direction.");
+                return;
             }
 
-            if (Speed != 0)
+            if (Gear.UsedGear.Value != Gears.Neutral && !Gear.IsLastGearInUse)
             {
-                throw new CanNotChangeDrivingDirectionException("Can not change driving direction while car driving.");
+                EngineSpeed -= EngineSpeed * 0.3;
             }
 
-            DrivingDirection = DrivingDirection == DrivingDirections.Backward
-                ? DrivingDirections.Forward
-                : DrivingDirections.Backward;
+            Gear.GearUp();
+        }
+
+        public void GearDown()
+        {
+            if (Gear.UsedGear.Previous is null)
+            {
+                return;
+            }
+
+            if (Gear.UsedGear.Value != Gears.Neutral && !Gear.IsLastGearInUse)
+            {
+                EngineSpeed += EngineSpeed * 0.3;
+            }
+
+            Gear.GearDown();
+        }
+
+        public void Decelerate()
+        {
+            if (CarState == CarStates.Off)
+            {
+                throw new CanNotDriveWhileCarOff("Can not drive while car is off");
+            }
+
+
+            CalculateEngineSpeed(-1);
+            CalculateCarSpeed(-1);
+        }
+
+        private void CalculateEngineSpeed(int ratio)
+        {
+            var calculatedEngineSpeed = EngineSpeed + ratio * (2 * new Random().Next(10, 20) + EngineSpeed / 1000);
+
+            if (calculatedEngineSpeed <= 800)
+            {
+                EngineSpeed = 800;
+                return;
+            }
+
+            if (calculatedEngineSpeed >= EngineSpeedMaxValue)
+            {
+                EngineSpeed = EngineSpeedMaxValue;
+                return;
+            }
+
+            EngineSpeed = calculatedEngineSpeed;
+        }
+
+        private void CalculateCarSpeed(int ratio)
+        {
+            double calculatedSpeed;
+
+            if (Gear.UsedGear.Value == Gears.Neutral)
+            {
+                var slowingDownValue = new Random().Next(10, 20);
+                calculatedSpeed = CarSpeed - slowingDownValue;
+            }
+            else
+            {
+                var positiveGearNumber =
+                    Gear.UsedGear.Value < 0 ? (int) Gear.UsedGear.Value * -1 : (int) Gear.UsedGear.Value;
+                calculatedSpeed = positiveGearNumber * 10 + EngineSpeed / 100 + ratio;
+            }
+
+
+            if (calculatedSpeed <= 0)
+            {
+                CarSpeed = 0;
+                return;
+            }
+
+            if (calculatedSpeed >= CarSpeedMaxValue)
+            {
+                CarSpeed = CarSpeedMaxValue;
+                return;
+            }
+
+            CarSpeed = calculatedSpeed;
         }
 
         private void BurnOil()

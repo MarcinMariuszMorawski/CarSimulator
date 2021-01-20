@@ -1,17 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using CarSimulatorEngine.Enums;
+﻿using CarSimulatorEngine.Enums;
 using CarSimulatorEngine.Interfaces;
 using CarSimulatorEngine.Providers;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace CarSimulatorEngine.Engine
 {
     public class CarSimulatorEngine : ICarSimulatorEngine
     {
         public CarTypes CarType { get; private set; }
-        public double Speed => Car.Speed;
-        public double SpeedMaxValue => Car.SpeedMaxValue;
+        public double Speed => Car.CarSpeed;
+        public double SpeedMaxValue => Car.CarSpeedMaxValue;
         public double EngineSpeed => Car.EngineSpeed;
         public double EngineSpeedMaxValue => Car.EngineSpeedMaxValue;
         public double Fuel => Car.Fuel;
@@ -51,19 +50,29 @@ namespace CarSimulatorEngine.Engine
             Car.FillFuelTank();
         }
 
-        public void Drive()
+        public void Work()
         {
-            Car.Calculate();
+            Car.Work();
         }
 
-        public Gears GearUp()
+        public void Accelerate()
         {
-            return Car.Gear.GearUp();
+            Car.Accelerate();
         }
 
-        public Gears GearDown()
+        public void Decelerate()
         {
-            return Car.Gear.GearDown();
+            Car.Decelerate();
+        }
+
+        public void GearUp()
+        {
+            Car.GearUp();
+        }
+
+        public void GearDown()
+        {
+            Car.GearDown();
         }
     }
 }

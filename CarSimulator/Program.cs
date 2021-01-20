@@ -15,17 +15,41 @@ namespace CarSimulator
 
             carSimulatorEngine.StartCarEngine();
 
-            carSimulatorEngine.GearUp();
 
             while (true)
             {
-                carSimulatorEngine.Drive();
+                carSimulatorEngine.Work();
+
                 Console.WriteLine($"Fuel: {carSimulatorEngine.Fuel} " +
                                   $"Oil: {carSimulatorEngine.EngineOil} " +
                                   $"Gear: {carSimulatorEngine.UsedGear} " +
+                                  $"Fuel comsumption: {carSimulatorEngine.FuelConsumption} " +
                                   $"Engine speed: {carSimulatorEngine.EngineSpeed} " +
-                                  $"Car speed {carSimulatorEngine.Speed} ");
-                await Task.Delay(1000);
+                                  $"Car speed {carSimulatorEngine.Speed}");
+
+                var cos = Console.ReadKey();
+
+                if (cos.Key == ConsoleKey.UpArrow)
+                {
+                    carSimulatorEngine.Accelerate();
+                }
+
+                if (cos.Key == ConsoleKey.DownArrow)
+                {
+                    carSimulatorEngine.Decelerate();
+                }
+
+
+                if (cos.Key == ConsoleKey.P)
+                {
+                    carSimulatorEngine.GearUp();
+                }
+
+                if (cos.Key == ConsoleKey.L)
+                {
+                    carSimulatorEngine.GearDown();
+                }
+
             }
         }
     }

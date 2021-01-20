@@ -4,7 +4,7 @@ namespace CarSimulatorEngine.Models
 {
     internal class Truck : Car
     {
-        public  override double SpeedMaxValue { get; protected internal set; } = 120;
+        public  override double CarSpeedMaxValue { get; protected internal set; } = 120;
         public  override double EngineSpeedMaxValue { get; protected internal set; } = 6000;
         public  override double Fuel { get; protected internal set; } = 50;
         public  override double FuelCapacity { get; protected internal set; } = 100;
