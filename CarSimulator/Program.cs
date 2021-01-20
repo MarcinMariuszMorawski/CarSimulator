@@ -1,23 +1,32 @@
 ﻿using System;
-using GameCarSimulatorEngine;
+using System.Threading.Tasks;
+using CarSimulatorEngine.Enums;
+using CarSimulatorEngine.Engine;
 
 namespace CarSimulator
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static async Task Main()
         {
-            var carSimulatorEngine = new GameCarSimulatorEngine.CarSimulator();
+            var carSimulatorEngine = new CarSimulatorEngine.Engine.CarSimulatorEngine(CarTypes.PassengerCar);
+
+            carSimulatorEngine.FillFuelTank();
+
+            carSimulatorEngine.StartCarEngine();
+
+            carSimulatorEngine.GearUp();
 
             while (true)
             {
-                var cos = carSimulatorEngine.Loop();
-
-
-
+                carSimulatorEngine.Drive();
+                Console.WriteLine($"Fuel: {carSimulatorEngine.Fuel} " +
+                                  $"Oil: {carSimulatorEngine.EngineOil} " +
+                                  $"Gear: {carSimulatorEngine.UsedGear} " +
+                                  $"Engine speed: {carSimulatorEngine.EngineSpeed} " +
+                                  $"Car speed {carSimulatorEngine.Speed} ");
+                await Task.Delay(1000);
             }
-            
-
         }
     }
 }
