@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CarSimulatorEngine\CarSimulatorEngine.csproj" />
+    <ProjectReference Include="..\CarSimulatorUserInterfaceConsole\CarSimulatorUserInterfaceConsole.csproj" />
   </ItemGroup>
 
 </Project>

@@ -61,7 +61,7 @@ namespace CarSimulatorEngine.Interfaces
         {
             if (CarState == CarStates.Off)
             {
-                throw new CanNotDriveWhileCarOff("Can not drive while car is off");
+                return;
             }
 
             CheckOil();
