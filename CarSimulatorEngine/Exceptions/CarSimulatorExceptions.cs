@@ -31,6 +31,20 @@ namespace CarSimulatorEngine.Exceptions
         }
     }
 
+    public class CanNotFillOilWhileWorking : CarSimulatorException
+    {
+        public CanNotFillOilWhileWorking(string? message) : base(message)
+        {
+        }
+    }
+
+    public class CarFixException : CarSimulatorException
+    {
+        public CarFixException(string? message) : base(message)
+        {
+        }
+    }
+
     public class OilLevelTooHighException : CarSimulatorException
     {
         public OilLevelTooHighException(string? message) : base(message)

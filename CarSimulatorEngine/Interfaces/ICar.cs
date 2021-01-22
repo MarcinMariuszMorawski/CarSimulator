@@ -11,11 +11,13 @@ namespace CarSimulatorEngine.Interfaces
         void Work();
         void StartCarEngine();
         void StopCarEngine();
-        void FillFuelTank();
+        void AddFuel();
+        void AddOil();
         void Accelerate();
         void Decelerate();
         void GearUp();
         void GearDown();
+        void FixCarFaults();
     }
 
     internal abstract class Car : ICar
@@ -30,6 +32,7 @@ namespace CarSimulatorEngine.Interfaces
         public abstract double EngineOilGoodMaxValue { get; protected internal set; }
         public abstract double EngineOilGoodMinValue { get; protected internal set; }
         public double FuelConsumption => CalculateFuelConsumptionInKilometersPerHour();
+        public double OilConsumption => CalculateOilConsumptionInKilometersPerHour();
         public abstract Gear Gear { get; protected internal set; }
         public CarStates CarState { get; protected internal set; } = CarStates.Off;
         public HashSet<CarFaults> CarFaults { get; protected internal set; } = new HashSet<CarFaults>();
@@ -50,14 +53,55 @@ namespace CarSimulatorEngine.Interfaces
             CarState = CarStates.Off;
         }
 
-        public void FillFuelTank()
+        public void AddFuel()
         {
             if (CarState == CarStates.On)
             {
-                throw new CanNotFillFuelWhileWorking("Can not fill tank while car is working");
+                throw new CanNotFillFuelWhileWorking("Can not add fuel while car is working");
             }
 
-            Fuel = FuelCapacity;
+            var calculatedFuel = Fuel + 1;
+
+            if (calculatedFuel > FuelCapacity)
+            {
+                Fuel = FuelCapacity;
+                return;
+            }
+
+            Fuel = calculatedFuel;
+        }
+
+        public void AddOil()
+        {
+            if (CarState == CarStates.On)
+            {
+                throw new CanNotFillOilWhileWorking("Can not add oil while car is working");
+            }
+
+            var calculatedOil = EngineOil + 0.1;
+
+            if (calculatedOil > EngineOilGoodMaxValue)
+            {
+                EngineOil = EngineOilGoodMaxValue;
+                return;
+            }
+
+            EngineOil = calculatedOil;
+        }
+
+        public void FixCarFaults()
+        {
+            if (!CarFaults.Any())
+            {
+                throw new CarFixException("Car has no faults");
+            }
+
+            if (CarState == CarStates.On)
+            {
+                throw new CarFixException("Car not fix car while car is working");
+            }
+
+            CarFaults.Clear();
         }
 
         public void Work()
@@ -219,6 +263,7 @@ namespace CarSimulatorEngine.Interfaces
         {
             if (Fuel <= 0)
             {
+                StopCarEngine();
                 throw new NoFuelException("No fuel in tank.");
             }
         }
@@ -228,12 +273,14 @@ namespace CarSimulatorEngine.Interfaces
             if (EngineOil < EngineOilGoodMinValue)
             {
                 CarFaults.Add(Enums.CarFaults.BrokenEngine);
+                StopCarEngine();
                 throw new OilLevelTooLowException("Oil level is too low.");
             }
 
             if (EngineOil > EngineOilGoodMaxValue)
             {
                 CarFaults.Add(Enums.CarFaults.BrokenEngine);
+                StopCarEngine();
                 throw new OilLevelTooHighException("Oil level is too high.");
             }
         }
@@ -261,7 +308,7 @@ namespace CarSimulatorEngine.Interfaces
 
         private double CalculateOilConsumptionInKilometersPerHour()
         {
-            return 0.01;
+            return CarState == CarStates.Off ? 0 : 0.1;
         }
     }
 }

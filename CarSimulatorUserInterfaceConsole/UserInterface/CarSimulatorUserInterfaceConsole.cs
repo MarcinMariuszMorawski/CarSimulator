@@ -18,6 +18,7 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
         private int ConsoleHeight { get; set; } = Console.WindowHeight;
         private int ConsoleWidth { get; set; } = Console.WindowWidth;
         private bool IsExitEventTriggered { get; set; } = false;
+        private bool IsRefreshConsoleEventTriggered { get; set; } = false;
         private CarSimulatorEngine.Engine.CarSimulatorEngine CarSimulatorEngine { get; set; }
 
         public async Task Work()
@@ -77,23 +78,28 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
             {
                 Thread.CurrentThread.IsBackground = true;
 
-                try
+                while (true)
                 {
-                    while (true)
+                    if (IsExitEventTriggered)
                     {
-                        if (IsExitEventTriggered)
-                        {
-                            break;
-                        }
+                        break;
+                    }
 
+                    try
+                    {
                         CarSimulatorEngine.Work();
                         DrawUserInterface();
-                        await Task.Delay(1000);
                     }
-                }
-                catch (CarSimulatorException exception)
-                {
-                    LastToUserMessage = exception.Message;
+                    catch (CarSimulatorException exception)
+                    {
+                        LastToUserMessage = exception.Message;
+                    }
+                    catch (Exception)
+                    {
+                        LastToUserMessage = "Unexpected game exception";
+                    }
+
+                    await Task.Delay(1000);
                 }
             }).Start();
         }
@@ -125,7 +131,14 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
                         CarSimulatorEngine.StopCarEngine();
                         break;
                     case ConsoleKey.F:
-                        CarSimulatorEngine.FillFuelTank();
+                        CarSimulatorEngine.AddFuel();
+                        break;
+                    case ConsoleKey.O:
+                        CarSimulatorEngine.AddOil();
+                        break;
+                    case ConsoleKey.M:
+                        CarSimulatorEngine.FixCarFaults();
+                        IsRefreshConsoleEventTriggered = true;
                         break;
                     case ConsoleKey.Escape:
                         IsExitEventTriggered = true;
@@ -135,6 +148,10 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
             catch (CarSimulatorException exception)
             {
                 LastToUserMessage = exception.Message;
+            }
+            catch (Exception)
+            {
+                LastToUserMessage = "Unexpected game exception";
             }
         }
 
@@ -147,23 +164,24 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
             var topPosition = 0;
             var leftPosition = 1;
 
-            CheckIfConsoleSizeChangedAndClear();
+            CheckIfConsoleSizeChanged();
+            RefreshConsoleIfEventTriggered();
 
             if (mainSplitBasicBoxes.Any())
             {
-                topPosition = DrawBasicBoxes(leftPosition, topPosition + 2, mainSplitBasicBoxes, Color.Orange,
-                    Color.Aqua);
+                topPosition = DrawingExtensions.DrawBasicBoxes(leftPosition, topPosition + 2, mainSplitBasicBoxes,
+                    Color.Orange, Color.Aqua);
             }
 
             if (messageToDriverBasicBoxes.Any())
             {
-                topPosition = DrawBasicBoxes(leftPosition, topPosition + 2, messageToDriverBasicBoxes, Color.Blue,
-                    Color.Aqua);
+                topPosition = DrawingExtensions.DrawBasicBoxes(leftPosition, topPosition + 2, messageToDriverBasicBoxes,
+                    Color.Blue, Color.Aqua);
             }
 
             if (carFaultsBasicBoxes.Any())
             {
-                DrawBasicBoxes(leftPosition, topPosition + 2, carFaultsBasicBoxes, Color.Blue,
+                DrawingExtensions.DrawBasicBoxes(leftPosition, topPosition + 2, carFaultsBasicBoxes, Color.Blue,
                     Color.Aqua);
             }
         }
@@ -202,21 +220,22 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
                 new BasicBox("Gear max ", $"{CarSimulatorEngine.MaxGear}", Color.DodgerBlue, Color.Aqua),
                 new BasicBox("Gear min", $"{CarSimulatorEngine.MinGear}", Color.DodgerBlue, Color.Aqua),
 
-                new BasicBox("Fuel", $"{CarSimulatorEngine.Fuel}", Color.DarkSlateBlue, Color.Aqua),
-                new BasicBox("Fuel capacity", $"{CarSimulatorEngine.FuelCapacity}", Color.DarkSlateBlue, Color.Aqua),
-                new BasicBox("Fuel consumption", $"{CarSimulatorEngine.FuelConsumption}", Color.DarkSlateBlue,
+                new BasicBox("Fuel", $"{CarSimulatorEngine.Fuel:F}", Color.DarkSlateBlue, Color.Aqua),
+                new BasicBox("Fuel capacity", $"{CarSimulatorEngine.FuelCapacity:F}", Color.DarkSlateBlue, Color.Aqua),
+                new BasicBox("Fuel consumption", $"{CarSimulatorEngine.FuelConsumption:F}", Color.DarkSlateBlue,
                     Color.Aqua),
 
-                new BasicBox("Engine speed", $"{CarSimulatorEngine.EngineSpeed}", Color.IndianRed, Color.Aqua),
-                new BasicBox("Engine max speed", $"{CarSimulatorEngine.EngineSpeedMaxValue}", Color.IndianRed,
+                new BasicBox("Engine speed", $"{CarSimulatorEngine.EngineSpeed:F}", Color.IndianRed, Color.Aqua),
+                new BasicBox("Engine max speed", $"{CarSimulatorEngine.EngineSpeedMaxValue:F}", Color.IndianRed,
                     Color.Aqua),
 
-                new BasicBox("Car speed", $"{CarSimulatorEngine.Speed}", Color.DarkGoldenrod, Color.Aqua),
+                new BasicBox("Car speed", $"{CarSimulatorEngine.Speed:F}", Color.DarkGoldenrod, Color.Aqua),
 
-                new BasicBox("Oil value", $"{CarSimulatorEngine.EngineOil}", Color.Gray, Color.Aqua),
-                new BasicBox("Oil min good value", $"{CarSimulatorEngine.EngineOilGoodMinValue}", Color.Gray,
+                new BasicBox("Oil value", $"{CarSimulatorEngine.EngineOil:F}", Color.Gray, Color.Aqua),
+                new BasicBox("Oil consumption", $"{CarSimulatorEngine.OilConsumption:F}", Color.Gray, Color.Aqua),
+                new BasicBox("Oil min good value", $"{CarSimulatorEngine.EngineOilGoodMinValue:F}", Color.Gray,
                     Color.Aqua),
-                new BasicBox("Oil max good valued", $"{CarSimulatorEngine.EngineOilGoodMaxValue}", Color.Gray,
+                new BasicBox("Oil max good valued", $"{CarSimulatorEngine.EngineOilGoodMaxValue:F}", Color.Gray,
                     Color.Aqua),
             };
             return carBasicBoxes;
@@ -232,62 +251,34 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
                 new BasicBox("Decelerate", "Down Arrow"),
                 new BasicBox("Gear up", "W"),
                 new BasicBox("Gear down", "S"),
-                new BasicBox("Fill fuel tank", "F"),
+                new BasicBox("Add Fuel", "F"),
+                new BasicBox("Add Oil", "O"),
+                new BasicBox("Fix car faults", "M"),
                 new BasicBox("Shut down game", "Esc"),
             };
             return keysBasicBoxes.Select(x => new BasicBox(x.Title, x.Value, Color.Blue, Color.Aqua));
         }
 
-        private void CheckIfConsoleSizeChangedAndClear()
+        private void CheckIfConsoleSizeChanged()
         {
             if (ConsoleHeight != Console.WindowHeight || ConsoleWidth != Console.WindowWidth)
             {
-                ConsoleHeight = Console.WindowHeight;
-                ConsoleWidth = Console.WindowWidth;
-                Console.Clear();
-                Console.CursorVisible = false;
+                IsRefreshConsoleEventTriggered = true;
             }
         }
 
-        private int DrawBasicBoxes(int left, int top, IReadOnlyCollection<BasicBox> basicBoxes, Color backgroundColor,
-            Color textColor)
+        private void RefreshConsoleIfEventTriggered()
         {
-            Console.SetCursorPosition(left, top);
-            var startingLeftValue = left;
-            var boxWidth = basicBoxes.Max(x => Math.Max(x.Value.Length, x.Title.Length)) + 2;
-            var consoleWidth = Console.WindowWidth;
-            foreach (var basicBox in basicBoxes)
+            if (!IsRefreshConsoleEventTriggered)
             {
-                var backgroundColorToUse =
-                    basicBox.BackgroundColor == Color.Empty ? backgroundColor : basicBox.BackgroundColor;
-                var textColorToUse = basicBox.TextColor == Color.Empty ? textColor : basicBox.TextColor;
-
-                if (left + boxWidth > consoleWidth)
-                {
-                    top += 6;
-                    left = startingLeftValue;
-                }
-
-                Console.SetCursorPosition(left, top);
-                Console.WriteLine(" ".MultiplyString(boxWidth).PastelBg(backgroundColorToUse));
-                Console.SetCursorPosition(left, top + 1);
-                Console.WriteLine(" ".MultiplyString(boxWidth).PastelBg(backgroundColorToUse));
-                Console.SetCursorPosition(left, top + 2);
-                Console.WriteLine(" ".MultiplyString(boxWidth).PastelBg(backgroundColorToUse));
-                Console.SetCursorPosition(left, top + 3);
-                Console.WriteLine(" ".MultiplyString(boxWidth).PastelBg(backgroundColorToUse));
-
-                Console.SetCursorPosition(left, top + 1);
-                Console.WriteLine($"{" ".MultiplyString((boxWidth - basicBox.Title.Length) / 2)}{basicBox.Title}"
-                    .Pastel(textColorToUse).PastelBg(backgroundColorToUse));
-                Console.SetCursorPosition(left, top + 2);
-                Console.WriteLine($"{" ".MultiplyString((boxWidth - basicBox.Value.Length) / 2)}{basicBox.Value}"
-                    .Pastel(textColorToUse).PastelBg(backgroundColorToUse));
-
-                left += boxWidth + 5;
+                return;
             }
 
-            return top + 3;
+            ConsoleHeight = Console.WindowHeight;
+            ConsoleWidth = Console.WindowWidth;
+            Console.Clear();
+            Console.CursorVisible = false;
+            IsRefreshConsoleEventTriggered = false;
         }
 
         private void InitEngine()

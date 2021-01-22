@@ -10,15 +10,19 @@ namespace CarSimulatorEngine.Engine
     {
         public CarTypes CarType { get; private set; }
         public double Speed => Car.CarSpeed;
-        public double SpeedMaxValue => Car.CarSpeedMaxValue;
+
         public double EngineSpeed => Car.EngineSpeed;
         public double EngineSpeedMaxValue => Car.EngineSpeedMaxValue;
+
         public double Fuel => Car.Fuel;
         public double FuelCapacity => Car.FuelCapacity;
+        public double FuelConsumption => Car.FuelConsumption;
+
         public double EngineOil => Car.EngineOil;
         public double EngineOilGoodMaxValue => Car.EngineOilGoodMaxValue;
         public double EngineOilGoodMinValue => Car.EngineOilGoodMinValue;
-        public double FuelConsumption => Car.FuelConsumption;
+        public double OilConsumption => Car.OilConsumption;
+
         public CarStates CarState => Car.CarState;
         public ReadOnlyCollection<CarFaults> CarFaults => Car.CarFaults.ToList().AsReadOnly();
 
@@ -45,9 +49,19 @@ namespace CarSimulatorEngine.Engine
             Car.StopCarEngine();
         }
 
-        public void FillFuelTank()
+        public void AddFuel()
         {
-            Car.FillFuelTank();
+            Car.AddFuel();
+        }
+
+        public void AddOil()
+        {
+            Car.AddOil();
+        }
+
+        public void FixCarFaults()
+        {
+            Car.FixCarFaults();
         }
 
         public void Work()
