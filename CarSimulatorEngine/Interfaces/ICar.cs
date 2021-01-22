@@ -11,11 +11,9 @@ namespace CarSimulatorEngine.Interfaces
         void Work();
         void StartCarEngine();
         void StopCarEngine();
-
         void FillFuelTank();
-
         void Accelerate();
-
+        void Decelerate();
         void GearUp();
         void GearDown();
     }
@@ -39,7 +37,7 @@ namespace CarSimulatorEngine.Interfaces
         public void StartCarEngine()
         {
             if (CarFaults.Any())
-                throw new BrokenCarEngineException("");
+                throw new BrokenCarEngineException("Car has faults, can not start engine");
 
             CarState = CarStates.On;
             EngineSpeed = 800;
@@ -54,6 +52,10 @@ namespace CarSimulatorEngine.Interfaces
 
         public void FillFuelTank()
         {
+            if (CarState == CarStates.On)
+            {
+                throw new CanNotFillFuelWhileWorking("Can not fill tank while car is working");
+            }
             Fuel = FuelCapacity;
         }
 
@@ -79,7 +81,7 @@ namespace CarSimulatorEngine.Interfaces
         {
             if (CarState == CarStates.Off)
             {
-                throw new CanNotDriveWhileCarOff("Can not drive while car is off");
+                throw new CanNotDriveWhileCarOff("Can not accelerate while car is off");
             }
 
             CalculateEngineSpeed(1);
@@ -120,7 +122,7 @@ namespace CarSimulatorEngine.Interfaces
         {
             if (CarState == CarStates.Off)
             {
-                throw new CanNotDriveWhileCarOff("Can not drive while car is off");
+                throw new CanNotDriveWhileCarOff("Can not decelerate drive while car is off");
             }
 
 
@@ -185,7 +187,15 @@ namespace CarSimulatorEngine.Interfaces
             const int secondsInOneHour = 3600;
             var burnedOil = oilConsumption / secondsInOneHour;
 
-            EngineOil -= burnedOil;
+            var calculatedOil = EngineOil - burnedOil;
+
+            if (calculatedOil <= 0)
+            {
+                EngineOil = 0;
+                return;
+            }
+
+            EngineOil = calculatedOil;
         }
 
         private void BurnFuel()
@@ -193,8 +203,15 @@ namespace CarSimulatorEngine.Interfaces
             var fuelConsumption = CalculateFuelConsumptionInKilometersPerHour();
             const int secondsInOneHour = 3600;
             var burnedFuel = fuelConsumption / secondsInOneHour;
+            var calculatedFuel = Fuel - burnedFuel;
 
-            Fuel -= burnedFuel;
+            if (calculatedFuel <= 0)
+            {
+                Fuel = 0;
+                return;
+            }
+
+            Fuel = calculatedFuel;
         }
 
         private void CheckFuel()
@@ -243,7 +260,7 @@ namespace CarSimulatorEngine.Interfaces
 
         private double CalculateOilConsumptionInKilometersPerHour()
         {
-            return 0.001;
+            return 0.01;
         }
     }
 }

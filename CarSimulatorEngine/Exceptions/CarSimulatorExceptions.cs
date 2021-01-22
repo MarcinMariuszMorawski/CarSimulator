@@ -44,6 +44,12 @@ namespace CarSimulatorEngine.Exceptions
         {
         }
     }
+    public class CanNotFillFuelWhileWorking : CarSimulatorException
+    {
+        public CanNotFillFuelWhileWorking(string? message) : base(message)
+        {
+        }
+    }
 
     public class CanNotChangeDrivingDirectionException : CarSimulatorException
     {
