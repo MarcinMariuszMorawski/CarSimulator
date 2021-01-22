@@ -56,6 +56,7 @@ namespace CarSimulatorEngine.Interfaces
             {
                 throw new CanNotFillFuelWhileWorking("Can not fill tank while car is working");
             }
+
             Fuel = FuelCapacity;
         }
 

@@ -1,15 +1,14 @@
 ﻿using CarSimulatorEngine.Enums;
 using CarSimulatorEngine.Exceptions;
+using CarSimulatorUserInterfaceConsole.Extensions;
+using CarSimulatorUserInterfaceConsole.Model;
 using Pastel;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CarSimulatorUserInterfaceConsole.Extensions;
-using CarSimulatorUserInterfaceConsole.Model;
 
 namespace CarSimulatorUserInterfaceConsole.UserInterface
 {
@@ -158,7 +157,8 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
 
             if (messageToDriverBasicBoxes.Any())
             {
-                topPosition = DrawBasicBoxes(leftPosition, topPosition + 2, messageToDriverBasicBoxes, Color.Blue, Color.Aqua);
+                topPosition = DrawBasicBoxes(leftPosition, topPosition + 2, messageToDriverBasicBoxes, Color.Blue,
+                    Color.Aqua);
             }
 
             if (carFaultsBasicBoxes.Any())
@@ -171,7 +171,10 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
         private List<BasicBox> GetMessageToDriverBasicBoxes()
         {
             var title = "Last message to driver:";
-            return new List<BasicBox> {new BasicBox($"{title}{" ".MultiplyString(Console.WindowWidth - title.Length - 4)}", LastToUserMessage)};
+            return new List<BasicBox>
+            {
+                new BasicBox($"{title}{" ".MultiplyString(Console.WindowWidth - title.Length - 4)}", LastToUserMessage)
+            };
         }
 
         private List<BasicBox> GetCarFaultsBasicBoxes()
@@ -194,22 +197,27 @@ namespace CarSimulatorUserInterfaceConsole.UserInterface
             {
                 new BasicBox("Car state", $"{CarSimulatorEngine.CarState}",
                     CarSimulatorEngine.CarState == CarStates.Off ? Color.Red : Color.Green, Color.Aqua),
-                new BasicBox("Gear", $"{CarSimulatorEngine.UsedGear}", Color.DarkRed, Color.Aqua),
-                new BasicBox("Gear max ", $"{CarSimulatorEngine.MaxGear}", Color.DarkRed, Color.Aqua),
-                new BasicBox("Gear min", $"{CarSimulatorEngine.MinGear}", Color.DarkRed, Color.Aqua),
+
+                new BasicBox("Gear", $"{CarSimulatorEngine.UsedGear}", Color.DodgerBlue, Color.Aqua),
+                new BasicBox("Gear max ", $"{CarSimulatorEngine.MaxGear}", Color.DodgerBlue, Color.Aqua),
+                new BasicBox("Gear min", $"{CarSimulatorEngine.MinGear}", Color.DodgerBlue, Color.Aqua),
 
                 new BasicBox("Fuel", $"{CarSimulatorEngine.Fuel}", Color.DarkSlateBlue, Color.Aqua),
                 new BasicBox("Fuel capacity", $"{CarSimulatorEngine.FuelCapacity}", Color.DarkSlateBlue, Color.Aqua),
-                new BasicBox("Fuel consumption", $"{CarSimulatorEngine.FuelConsumption}", Color.DarkSlateBlue, Color.Aqua),
+                new BasicBox("Fuel consumption", $"{CarSimulatorEngine.FuelConsumption}", Color.DarkSlateBlue,
+                    Color.Aqua),
 
-                new BasicBox("Engine speed", $"{CarSimulatorEngine.EngineSpeed}", Color.CornflowerBlue, Color.Aqua),
-                new BasicBox("Engine max speed", $"{CarSimulatorEngine.EngineSpeedMaxValue}", Color.CornflowerBlue, Color.Aqua),
+                new BasicBox("Engine speed", $"{CarSimulatorEngine.EngineSpeed}", Color.IndianRed, Color.Aqua),
+                new BasicBox("Engine max speed", $"{CarSimulatorEngine.EngineSpeedMaxValue}", Color.IndianRed,
+                    Color.Aqua),
 
                 new BasicBox("Car speed", $"{CarSimulatorEngine.Speed}", Color.DarkGoldenrod, Color.Aqua),
 
                 new BasicBox("Oil value", $"{CarSimulatorEngine.EngineOil}", Color.Gray, Color.Aqua),
-                new BasicBox("Oil min good value", $"{CarSimulatorEngine.EngineOilGoodMinValue}", Color.Gray, Color.Aqua),
-                new BasicBox("Oil max good valued", $"{CarSimulatorEngine.EngineOilGoodMaxValue}", Color.Gray, Color.Aqua),
+                new BasicBox("Oil min good value", $"{CarSimulatorEngine.EngineOilGoodMinValue}", Color.Gray,
+                    Color.Aqua),
+                new BasicBox("Oil max good valued", $"{CarSimulatorEngine.EngineOilGoodMaxValue}", Color.Gray,
+                    Color.Aqua),
             };
             return carBasicBoxes;
         }

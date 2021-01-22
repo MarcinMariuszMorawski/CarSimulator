@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CarSimulatorUserInterfaceConsole.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         public static string MultiplyString(this string text, int value)
         {

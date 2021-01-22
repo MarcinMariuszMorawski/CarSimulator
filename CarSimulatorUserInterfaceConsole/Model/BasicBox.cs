@@ -2,7 +2,7 @@
 
 namespace CarSimulatorUserInterfaceConsole.Model
 {
-    public class BasicBox
+    internal class BasicBox
     {
         public string Title { get; set; }
         public string Value { get; set; }
